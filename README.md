@@ -1,3 +1,3 @@
 # Python_Programming_AdrianSoderbergSkog
 
-Skolprojekt
+Skolprojekt i kursen python programmering
