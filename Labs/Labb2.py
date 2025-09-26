@@ -1,13 +1,14 @@
 import matplotlib.pyplot as plt
 import re
 import numpy as np
+import statistics 
 
 def euclidean_distance(p1, p2, q1 , q2):
     distance = np.sqrt((p1 - q1)**2 + (p2 - q2)**2)
     return distance
 
 def read_file(filename, delimiter= ", "):
-#Läser in textfiler och returnerar en 
+#Läser in textfiler och returnerar en 2D lista med strings
     with open(filename, "r") as textfile:
         readed_file = []
         for line in textfile:
@@ -97,7 +98,51 @@ def Collect_from_user(numberOfPoints = 1):
                 break
     return UserDataPoints
 
-def main():
+def training_test_split(datapoints):
+    datapoints = np.array(datapoints[1:], dtype= float)
+    Group0 = datapoints[datapoints[:,2] == 0]
+    Group1 = datapoints[datapoints[:,2] == 1]
+
+    np.random.shuffle(Group0)
+    np.random.shuffle(Group1)
+
+    training = np.vstack((Group0[:50], Group1[:50]))
+    test = np.vstack((Group0[50:], Group1[50:]))
+    np.random.shuffle(training)
+    np.random.shuffle(test)
+    return training, test
+
+def calculate_accuracy(TP, TN, FP, FN):
+    accuracy = (TP + TN)/sum([TP, TN, FP, FN])
+    return accuracy
+
+def compare_Predicted_Actual(actual, predicted):
+    TP, TN, FP, FN = 0, 0, 0, 0
+    for a, p in zip(actual, predicted):
+        if a == 0 and p == 0:
+            TN += 1
+        elif a == 1 and p == 1:
+            TP += 1
+        elif a == 0 and p == 1:
+            FP += 1 
+        elif a == 1 and p == 0:
+            FN += 1
+    return TP, TN, FP, FN
+
+def plot_accuracy(accuracy, repetitions, mean):
+    x = [i+1 for i in range(repetitions)]
+    plt.figure(dpi= 100)
+    plt.plot(x, accuracy, color= "#0000ff", label= "Accuracy")
+    plt.axhline(mean, color="#ff0000", linestyle= "--", label= f"Average = {mean:.2%}")
+    plt.legend()
+    plt.xlabel("Repetition")
+    plt.ylabel("Accuracy")
+    plt.show()
+
+def main_basic():
+#Huvudfunktionen för grunduppgifterna
+#Printar ut resultatet för testpunkt som matas in av användaren 
+#Printar också ut resultatet för de 4 testpunkterna
     dataPoints = read_file("datapoints.txt", ", ")
     testData = read_file("testpoints.txt", " ")
     cleanTestData = Clean_Test_Data(testData)
@@ -121,10 +166,6 @@ def main():
     distancesUser = meassure_distances(dataPointsClean, User_X, User_Y)
     classifiedUserData = Classify(distancesUser, UserData, k = 10)
 
-    
-    for row in dataPoints:
-        print(row)
-
     print("Test data: ")
     for p in classifiedTestData:
         print(p)
@@ -134,4 +175,47 @@ def main():
 
     plot_Points(Pichu_x, Pichu_y, Pikatchu_x, Pikatchu_y, Test_x, Test_y, User_X, User_Y)
 
-main()
+def main_bonus():
+#Huvudfunktionen för bonusuppgifterna
+    repetitions = 10
+    accuracyList = []
+    for i in range(repetitions):
+        DataPoints = read_file("datapoints.txt", ", ")
+        trainingData, testData = training_test_split(DataPoints)
+
+        Test_X, Test_Y = split_x_and_y(testData)
+
+        distances = meassure_distances(trainingData, Test_X, Test_Y)
+        classifiedData = Classify(distances, testData, 10)
+
+        predictions = []    #Konverterar den classifierade datan till lista med 1 och 0
+        for row in classifiedData:
+            if row.split()[-1] == "Pikatchu":
+                predictions.append(1)
+            elif row.split()[-1] == "Pichu":
+                predictions.append(0)
+        
+        actualLabels = [int(x[2]) for x in testData]
+
+        TP, TN, FP, FN = compare_Predicted_Actual(actualLabels, predictions)
+
+        accuracy = calculate_accuracy(TP, TN, FP, FN)
+
+        accuracyList.append(accuracy)
+    mean = statistics.mean(accuracyList)
+
+    print(f"The Average accuracy is {mean:.2%}")
+    plot_accuracy(accuracyList, repetitions, mean)
+
+#main_basic()
+main_bonus()
+
+
+"""
+Källor:
+AI25-Programmering - Lecture_notes
+W3schools.com
+chatGPT för felsökning och feedback
+disskussioner med klasskanmrater
+Strukturen är till viss del inspirerad av Hamids kod
+"""
