@@ -8,7 +8,8 @@ def euclidean_distance(p1, p2, q1 , q2):
     return distance
 
 def read_file(filename, delimiter= ", "):
-#Läser in textfiler och returnerar en 2D lista med strings
+    """Läser in textfiler och returnerar en 2D lista med strings"""
+
     with open(filename, "r") as textfile:
         readed_file = []
         for line in textfile:
@@ -27,7 +28,8 @@ def Sort_by_Label(data):
     return group0, group1
 
 def Clean_Test_Data(testData): 
-#Tar bort allt onödigt och ger tillbaka endast värden för bredd och höjd.
+    """Tar bort allt onödigt och ger tillbaka endast float-värden för bredd och höjd."""
+
     testData.pop(0)
     data = [[x[1], x[2]] for x in testData]
 
@@ -41,7 +43,10 @@ def Clean_Test_Data(testData):
     return cleanedTestData
 
 def plot_Points(x1, y1, x2, y2, tx, ty, ux, uy):
+    """Skatterplott diagram med alla datapunkter, testpunkter och punkter från användarinput"""
+
     plt.figure(dpi= 100)
+    plt.title("Pokemon classification with KNN")
     plt.scatter(x1, y1, color="#c7a900", alpha= 0.6, label= "Pichu")
     plt.scatter(x2, y2, color="#0000ff", alpha= 0.6, label= "Pikachu")
     plt.scatter(tx, ty, color="#ff0000", marker= "+", alpha= 0.8, label= "Test Data")
@@ -52,8 +57,9 @@ def plot_Points(x1, y1, x2, y2, tx, ty, ux, uy):
     plt.show()
 
 def measure_distances(datapoints, UnlabeldX, UnlabeldY): 
-#Räknar ut euklidiskt avstånd mellan de oidentifierade punkterna och alla träningspunkter.
-#Returnerar en lista med alla avstånd sorterade i storleksordning ihop med punkternas label.
+    """Räknar ut euklidiskt avstånd mellan de oidentifierade punkterna och alla träningspunkter.
+    Returnerar en lista med alla avstånd sorterade i storleksordning ihop med punkternas label."""
+
     distancesFromTest = []
 
     for pointX, pointY in zip(UnlabeldX, UnlabeldY):
@@ -67,8 +73,9 @@ def measure_distances(datapoints, UnlabeldX, UnlabeldY):
     return distancesFromTest
 
 def Classify(distances, TestData, k = 1): 
-#Använder K nearest neighbors för att klassifiera punkter. 
-#Man kan skicka in önskat k-värde annars används 1 som default. 
+    """Använder K nearest neighbors för att klassifiera punkter. 
+    Man kan skicka in önskat k-värde annars används 1 som default. """
+
     classifiedPoints = []
     
     for i, testpoint in enumerate(distances):
@@ -81,7 +88,8 @@ def Classify(distances, TestData, k = 1):
     return classifiedPoints
 
 def Collect_from_user(numberOfPoints = 1):
-#Mata in hur många punkter du vill hämta från användaren. 
+    """Mata in hur många punkter du vill hämta från användaren. """
+
     UserDataPoints = []
     for i in range(numberOfPoints):
         while True:
@@ -99,6 +107,8 @@ def Collect_from_user(numberOfPoints = 1):
     return UserDataPoints
 
 def training_test_split(datapoints):
+    """Delar upp data slumpmässigt i 100 träningspukter och 50 testpunkter"""
+
     datapoints = np.array(datapoints[1:], dtype= float)
     Group0 = datapoints[datapoints[:,2] == 0]
     Group1 = datapoints[datapoints[:,2] == 1]
@@ -117,8 +127,9 @@ def calculate_accuracy(TP, TN, FP, FN):
     return accuracy
 
 def compare_Predicted_Actual(actual, predicted):
-#Jämför de classifierade datapunkterna med deras faktiska label
-#Negativ (N) innebär Pichu och Positiv (P) är Pikachu
+    """Jämför de classifierade datapunkterna med deras faktiska label
+    Negativ (N) innebär Pichu och Positiv (P) är Pikachu"""
+
     TP, TN, FP, FN = 0, 0, 0, 0
     for a, p in zip(actual, predicted):
         if a == 0 and p == 0:
@@ -143,9 +154,10 @@ def plot_accuracy(accuracy, repetitions, mean):
     plt.show()
 
 def main_basic():
-#Huvudfunktionen för grunduppgifterna
-#Printar ut resultatet för testpunkt som matas in av användaren 
-#Printar också ut resultatet för de 4 testpunkterna i testpoints.txt
+    """Huvudfunktionen för grunduppgifterna
+    Printar ut resultatet för testpunkt som matas in av användaren 
+    Printar också ut resultatet för de 4 testpunkterna i testpoints.txt"""
+
     dataPoints = read_file("datapoints.txt", ", ")
     testData = read_file("testpoints.txt", " ")
     cleanTestData = Clean_Test_Data(testData)
@@ -179,8 +191,9 @@ def main_basic():
     plot_Points(Pichu_x, Pichu_y, Pikachu_x, Pikachu_y, Test_x, Test_y, User_X, User_Y)
 
 def main_bonus():
-#Huvudfunktionen för bonusuppgifterna
-#Printar ut nogrannheten för 10 repetitioner inkl. graf
+    """Huvudfunktionen för bonusuppgifterna
+    Printar ut nogrannheten för 10 repetitioner inkl. graf"""
+
     repetitions = 10
     accuracyList = []
     for i in range(repetitions):
@@ -192,7 +205,8 @@ def main_bonus():
         distances = measure_distances(trainingData, Test_X, Test_Y)
         classifiedData = Classify(distances, testData, 10)
 
-        predictions = []    #Konverterar den classifierade datan till lista med 1 och 0
+        #Den classifierade datan konverteras till lista med 1 och 0"""
+        predictions = []    
         for row in classifiedData:
             if row.split()[-1] == "Pikachu":
                 predictions.append(1)
@@ -211,7 +225,7 @@ def main_bonus():
     print(f"The Average accuracy is {mean:.2%}")
     plot_accuracy(accuracyList, repetitions, mean)
 
-main_basic()
+#main_basic()
 main_bonus()
 
 
@@ -221,5 +235,5 @@ AI25-Programmering - Lecture_notes
 W3schools.com
 chatGPT för felsökning och feedback
 disskussioner med klasskanmrater
-Strukturen är till viss del inspirerad av Hamids kod
+Strukturen är till viss del inspirerad av Hamids kod 
 """
