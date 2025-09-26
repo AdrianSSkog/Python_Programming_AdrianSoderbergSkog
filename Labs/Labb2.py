@@ -43,7 +43,7 @@ def Clean_Test_Data(testData):
 def plot_Points(x1, y1, x2, y2, tx, ty, ux, uy):
     plt.figure(dpi= 100)
     plt.scatter(x1, y1, color="#c7a900", alpha= 0.6, label= "Pichu")
-    plt.scatter(x2, y2, color="#0000ff", alpha= 0.6, label= "Pikatchu")
+    plt.scatter(x2, y2, color="#0000ff", alpha= 0.6, label= "Pikachu")
     plt.scatter(tx, ty, color="#ff0000", marker= "+", alpha= 0.8, label= "Test Data")
     plt.scatter(ux, uy, color="#18f005", marker= "*", alpha= 0.8, label= "User Data", s= 150, edgecolors= "#4B1905")
     plt.xlabel("Width cm")
@@ -51,7 +51,7 @@ def plot_Points(x1, y1, x2, y2, tx, ty, ux, uy):
     plt.legend()
     plt.show()
 
-def meassure_distances(datapoints, UnlabeldX, UnlabeldY): 
+def measure_distances(datapoints, UnlabeldX, UnlabeldY): 
 #Räknar ut euklidiskt avstånd mellan de oidentifierade punkterna och alla träningspunkter.
 #Returnerar en lista med alla avstånd sorterade i storleksordning ihop med punkternas label.
     distancesFromTest = []
@@ -73,15 +73,15 @@ def Classify(distances, TestData, k = 1):
     
     for i, testpoint in enumerate(distances):
         
-        Pikatchu_Neighbors = [x for x in testpoint[:k] if x[1] == 1]
-        if len(Pikatchu_Neighbors) > k/2:
-            classifiedPoints.append(f"Point {i+1} {TestData[i]} classified as Pikatchu")
+        Pikachu_Neighbors = [x for x in testpoint[:k] if x[1] == 1]
+        if len(Pikachu_Neighbors) > k/2:
+            classifiedPoints.append(f"Point {i+1} {TestData[i]} classified as Pikachu")
         else:
             classifiedPoints.append(f"Point {i+1} {TestData[i]} classified as Pichu")
     return classifiedPoints
 
 def Collect_from_user(numberOfPoints = 1):
-#De nummer som du skickar in avgör hur många punkter du hämtar från användaren. 
+#Mata in hur många punkter du vill hämta från användaren. 
     UserDataPoints = []
     for i in range(numberOfPoints):
         while True:
@@ -117,6 +117,8 @@ def calculate_accuracy(TP, TN, FP, FN):
     return accuracy
 
 def compare_Predicted_Actual(actual, predicted):
+#Jämför de classifierade datapunkterna med deras faktiska label
+#Negativ (N) innebär Pichu och Positiv (P) är Pikachu
     TP, TN, FP, FN = 0, 0, 0, 0
     for a, p in zip(actual, predicted):
         if a == 0 and p == 0:
@@ -132,8 +134,9 @@ def compare_Predicted_Actual(actual, predicted):
 def plot_accuracy(accuracy, repetitions, mean):
     x = [i+1 for i in range(repetitions)]
     plt.figure(dpi= 100)
+    plt.title(f"Accuracy for {repetitions} repetitions")
     plt.plot(x, accuracy, color= "#0000ff", label= "Accuracy")
-    plt.axhline(mean, color="#ff0000", linestyle= "--", label= f"Average = {mean:.2%}")
+    plt.axhline(mean, color="#ff0000", linestyle= "--", label= f"Average accuracy = {mean:.2%}")
     plt.legend()
     plt.xlabel("Repetition")
     plt.ylabel("Accuracy")
@@ -142,7 +145,7 @@ def plot_accuracy(accuracy, repetitions, mean):
 def main_basic():
 #Huvudfunktionen för grunduppgifterna
 #Printar ut resultatet för testpunkt som matas in av användaren 
-#Printar också ut resultatet för de 4 testpunkterna
+#Printar också ut resultatet för de 4 testpunkterna i testpoints.txt
     dataPoints = read_file("datapoints.txt", ", ")
     testData = read_file("testpoints.txt", " ")
     cleanTestData = Clean_Test_Data(testData)
@@ -152,18 +155,18 @@ def main_basic():
     dataPointsClean = pointsGroup0 + pointsGroup1
 
     Pichu = [(x[0], x[1]) for x in pointsGroup0]
-    Pikatchu = [(x[0], x[1]) for x in pointsGroup1]
+    Pikachu = [(x[0], x[1]) for x in pointsGroup1]
 
     Pichu_x, Pichu_y = split_x_and_y(Pichu)
-    Pikatchu_x, Pikatchu_y = split_x_and_y(Pikatchu)
+    Pikachu_x, Pikachu_y = split_x_and_y(Pikachu)
     Test_x, Test_y = split_x_and_y(cleanTestData)
 
-    distancesTest = meassure_distances(dataPointsClean, Test_x, Test_y)
+    distancesTest = measure_distances(dataPointsClean, Test_x, Test_y)
     classifiedTestData = Classify(distancesTest, cleanTestData, k = 10)
 
     UserData = Collect_from_user(1) 
     User_X, User_Y = split_x_and_y(UserData)
-    distancesUser = meassure_distances(dataPointsClean, User_X, User_Y)
+    distancesUser = measure_distances(dataPointsClean, User_X, User_Y)
     classifiedUserData = Classify(distancesUser, UserData, k = 10)
 
     print("Test data: ")
@@ -173,10 +176,11 @@ def main_basic():
     for p in classifiedUserData:
         print(p)
 
-    plot_Points(Pichu_x, Pichu_y, Pikatchu_x, Pikatchu_y, Test_x, Test_y, User_X, User_Y)
+    plot_Points(Pichu_x, Pichu_y, Pikachu_x, Pikachu_y, Test_x, Test_y, User_X, User_Y)
 
 def main_bonus():
 #Huvudfunktionen för bonusuppgifterna
+#Printar ut nogrannheten för 10 repetitioner inkl. graf
     repetitions = 10
     accuracyList = []
     for i in range(repetitions):
@@ -185,12 +189,12 @@ def main_bonus():
 
         Test_X, Test_Y = split_x_and_y(testData)
 
-        distances = meassure_distances(trainingData, Test_X, Test_Y)
+        distances = measure_distances(trainingData, Test_X, Test_Y)
         classifiedData = Classify(distances, testData, 10)
 
         predictions = []    #Konverterar den classifierade datan till lista med 1 och 0
         for row in classifiedData:
-            if row.split()[-1] == "Pikatchu":
+            if row.split()[-1] == "Pikachu":
                 predictions.append(1)
             elif row.split()[-1] == "Pichu":
                 predictions.append(0)
@@ -207,7 +211,7 @@ def main_bonus():
     print(f"The Average accuracy is {mean:.2%}")
     plot_accuracy(accuracyList, repetitions, mean)
 
-#main_basic()
+main_basic()
 main_bonus()
 
 
