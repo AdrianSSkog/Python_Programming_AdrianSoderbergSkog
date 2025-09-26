@@ -7,6 +7,7 @@ def euclidean_distance(p1, p2, q1 , q2):
     return distance
 
 def read_file(filename, delimiter= ", "):
+#Läser in textfiler och returnerar en 
     with open(filename, "r") as textfile:
         readed_file = []
         for line in textfile:
@@ -24,7 +25,8 @@ def Sort_by_Label(data):
     group1 = [[float(i) for i in x] for x in data if x[2] == "1"]
     return group0, group1
 
-def Clean_Test_Data(testData):
+def Clean_Test_Data(testData): 
+#Tar bort allt onödigt och ger tillbaka endast värden för bredd och höjd.
     testData.pop(0)
     data = [[x[1], x[2]] for x in testData]
 
@@ -37,21 +39,23 @@ def Clean_Test_Data(testData):
         cleanedTestData.append(new_Row)
     return cleanedTestData
 
-def plott_Points(x1, y1, x2, y2, t1, t2, u1, u2):
+def plot_Points(x1, y1, x2, y2, tx, ty, ux, uy):
     plt.figure(dpi= 100)
-    plt.scatter(x1, y1, color="#fffb00", alpha= 0.6, label= "Pichu")
+    plt.scatter(x1, y1, color="#c7a900", alpha= 0.6, label= "Pichu")
     plt.scatter(x2, y2, color="#0000ff", alpha= 0.6, label= "Pikatchu")
-    plt.scatter(t1, t2, color="#ff0000", marker= "x", alpha= 0.8, label= "Test Data")
-    plt.scatter(u1, u2, color="#0eab00", marker= "x", alpha= 0.8, label= "User Data")
+    plt.scatter(tx, ty, color="#ff0000", marker= "+", alpha= 0.8, label= "Test Data")
+    plt.scatter(ux, uy, color="#18f005", marker= "*", alpha= 0.8, label= "User Data", s= 150, edgecolors= "#4B1905")
     plt.xlabel("Width cm")
     plt.ylabel("Height cm")
     plt.legend()
     plt.show()
 
-def meassure_distances(datapoints, TestX, TestY):
+def meassure_distances(datapoints, UnlabeldX, UnlabeldY): 
+#Räknar ut euklidiskt avstånd mellan de oidentifierade punkterna och alla träningspunkter.
+#Returnerar en lista med alla avstånd sorterade i storleksordning ihop med punkternas label.
     distancesFromTest = []
 
-    for pointX, pointY in zip(TestX, TestY):
+    for pointX, pointY in zip(UnlabeldX, UnlabeldY):
         distances = []
         for point in datapoints:
             distancefromTest = euclidean_distance(pointX, pointY, point[0], point[1])
@@ -62,19 +66,21 @@ def meassure_distances(datapoints, TestX, TestY):
     return distancesFromTest
 
 def Classify(distances, TestData, k = 1): 
-    i = 0
+#Använder K nearest neighbors för att klassifiera punkter. 
+#Man kan skicka in önskat k-värde annars används 1 som default. 
     classifiedPoints = []
-    for testpoint in distances:
+    
+    for i, testpoint in enumerate(distances):
         
         Pikatchu_Neighbors = [x for x in testpoint[:k] if x[1] == 1]
         if len(Pikatchu_Neighbors) > k/2:
             classifiedPoints.append(f"Point {i+1} {TestData[i]} classified as Pikatchu")
         else:
             classifiedPoints.append(f"Point {i+1} {TestData[i]} classified as Pichu")
-        i += 1
     return classifiedPoints
 
 def Collect_from_user(numberOfPoints = 1):
+#De nummer som du skickar in avgör hur många punkter du hämtar från användaren. 
     UserDataPoints = []
     for i in range(numberOfPoints):
         while True:
@@ -84,7 +90,7 @@ def Collect_from_user(numberOfPoints = 1):
                 if userPoint_X <= 0 or userPoint_Y <= 0:
                     raise ValueError("Invalid input! Values for height and width must be a positive number")
             except ValueError:
-                print("Invalid input, enter only numbers")
+                print("Invalid input! Enter numbers only")
                 continue
             else:
                 UserDataPoints.append([userPoint_X, userPoint_Y])
@@ -96,10 +102,8 @@ def main():
     testData = read_file("testpoints.txt", " ")
     cleanTestData = Clean_Test_Data(testData)
 
-    dataPoints[0] = ["Width cm", "Height cm", "Lable"]
-
+    dataPoints[0] = ["Width cm", "Height cm", "Label"]
     pointsGroup0, pointsGroup1 = Sort_by_Label(dataPoints)
-
     dataPointsClean = pointsGroup0 + pointsGroup1
 
     Pichu = [(x[0], x[1]) for x in pointsGroup0]
@@ -110,12 +114,16 @@ def main():
     Test_x, Test_y = split_x_and_y(cleanTestData)
 
     distancesTest = meassure_distances(dataPointsClean, Test_x, Test_y)
-    classifiedTestData = Classify(distancesTest, cleanTestData, k = 1)
+    classifiedTestData = Classify(distancesTest, cleanTestData, k = 10)
 
-    UserData = Collect_from_user(4)
+    UserData = Collect_from_user(1) 
     User_X, User_Y = split_x_and_y(UserData)
     distancesUser = meassure_distances(dataPointsClean, User_X, User_Y)
     classifiedUserData = Classify(distancesUser, UserData, k = 10)
+
+    
+    for row in dataPoints:
+        print(row)
 
     print("Test data: ")
     for p in classifiedTestData:
@@ -124,6 +132,6 @@ def main():
     for p in classifiedUserData:
         print(p)
 
-    plott_Points(Pichu_x, Pichu_y, Pikatchu_x, Pikatchu_y, Test_x, Test_y, User_X, User_Y)
+    plot_Points(Pichu_x, Pichu_y, Pikatchu_x, Pikatchu_y, Test_x, Test_y, User_X, User_Y)
 
 main()
